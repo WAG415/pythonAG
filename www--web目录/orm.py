@@ -119,9 +119,9 @@ class ModelMetaclass(type):
                 mappings[k] = v
                 if v.primary_key:
                     #找到主键:
-                    if v.primary_key:
-                        # raise RuntimeError('Duplicate primary key for field: %s' % k)
-                        primaryKey = k
+                    if primaryKey:#判断是否是单一主键
+                        raise RuntimeError('Duplicate primary key for field: %s' % k)
+                    primaryKey = k
                 else:
                     fields.append(k)
         if not primaryKey:
@@ -201,26 +201,26 @@ class Model(dict, metaclass=ModelMetaclass):
 
 
 
-class User(Model):
-    __table__ = 'user'
-    id = IntegerField(primary_key=True)
-    name = StringField()
-
-    def show(self):
-        print(1, '__mappings__:', self.__mappings__)
-        print(2, '__table__:', self.__table__)
-        print(3, '__primary_key__:', self.__primary_key__)
-        print(4, '__fields__:', self.__fields__)
-        print(5, '__select__:', self.__select__)
-        print(6, '__insert__:', self.__insert__)
-        print(7, '__update__:', self.__update__)
-        print(8, '__delete__:', self.__delete__)
-
-user = User(id=123, name='Michael',job='eniger')
-print('-------create finish-----------')
-user.show()
-print(9, user)
-user.save()
+# class User(Model):
+#     __table__ = 'user'
+#     id = IntegerField(primary_key=True)
+#     name = StringField()
+#
+#     def show(self):
+#         print(1, '__mappings__:', self.__mappings__)
+#         print(2, '__table__:', self.__table__)
+#         print(3, '__primary_key__:', self.__primary_key__)
+#         print(4, '__fields__:', self.__fields__)
+#         print(5, '__select__:', self.__select__)
+#         print(6, '__insert__:', self.__insert__)
+#         print(7, '__update__:', self.__update__)
+#         print(8, '__delete__:', self.__delete__)
+#
+# user = User(id=123, name='Michael',job='eniger')
+# print('-------create finish-----------')
+# user.show()
+# print(9, user)
+# user.save()
 
 
 
