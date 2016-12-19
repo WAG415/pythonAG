@@ -49,11 +49,12 @@ class Comment(Model):
 
 
 
-import orm,asyncio,sys
+import lxf,asyncio,sys
 @asyncio.coroutine
 def test():
-    yield from orm.create_pool(user='www-data',password='www-data',database='awesome', host="43.240.138.12")
+    yield from lxf.create_pool(user='www-data',password='www-data',database='awesome', host="43.240.138.12")
     u = User(name='Test',email='test@example.com',passwd='1234567890',image='about:blank')
+    # u = User()
     yield from u.save()
 
 async def printa():

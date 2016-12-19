@@ -23,6 +23,7 @@ def create_pool(loop=None, **kw):
         password = kw['password'],
         charset = kw.get('charset','utf8'),
         db = kw["database"],
+        # db = kw['db'],
         autocommit = kw.get('autocommit',True),
         maxsize = kw.get('maxsize',10),
         minsize = kw.get('minsize',1),
