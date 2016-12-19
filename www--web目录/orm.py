@@ -13,18 +13,19 @@ def log(sql,args=()):
 '''创建连接池'''
 #创建一个全局的连接池,每个http请求都可以从连接池中直接获取数据库连接.使用连接池的好处是不必频繁地打开和关闭数据库连接,而是能复用就尽量复用
 @asyncio.coroutine
-def create_pool(loop, **kw):
+def create_pool(loop=None, **kw):
     logging.info('create database connection pool...')
     global  __pool
     __pool = yield from aiomysql.create_pool(
         host = kw.get('host','localhost'),
         port = kw.get('port',3306),
         user = kw['user'],
-        passsword = kw['password'],
-        db = kw.get('charset','utf8'),
+        password = kw['password'],
+        charset = kw.get('charset','utf8'),
+        db = kw["database"],
         autocommit = kw.get('autocommit',True),
         maxsize = kw.get('maxsize',10),
-        ninsize = kw.get('minsize',1),
+        minsize = kw.get('minsize',1),
         loop = loop
     )
 
@@ -180,6 +181,7 @@ class Model(dict, metaclass=ModelMetaclass):
     def save(self):
         args = list(map(self.getValueOrDefault,self.__fields__))
         args.append(self.getValueOrDefault(self.__primary_key__))
+        print(self.__insert__, args)
         rows = yield from execute(self.__insert__,args)
         if rows != 1:
             logging.warn('failed to insert record: affected rows: %s' % rows)
