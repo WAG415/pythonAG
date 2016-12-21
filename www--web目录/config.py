@@ -1,5 +1,4 @@
-#!/user/bin/env python3
-
+#!/usr/bin/env python3
 'config.py'
 
 import config_default

@@ -1,4 +1,4 @@
-#!/user/bin/env python3
+#!/usr/bin/env python3
 
 '把web app需要的3个表用model表示出来'
 
@@ -50,28 +50,22 @@ class Comment(Model):
 
 
 
-import lxf,asyncio,sys
-@asyncio.coroutine
-def test():
-    yield from lxf.create_pool(user='www-data',password='www-data',database='awesome', host="43.240.138.12")
-    u = User(name='Test',email='test@example.com',passwd='1234567890',image='about:blank')
-    # u = User()
-    yield from u.save()
-
-async def printa():
-    vl = await test()
-    for i in vl:
-        print(i)
+# import lxf,asyncio,sys
+# @asyncio.coroutine
+# def test():
+#     yield from lxf.create_pool(user='www-data',password='www-data',database='awesome', host="43.240.138.12")
+#     u = User(name='Test',email='test@example.com',passwd='1234567890',image='about:blank')
+#     # u = User()
+#     yield from u.save()
 #
-# if __name = '__main__':
-#     loop = asyncio.get_event_loop()
-#     loop.run_until_complete(asyncio.wait([test(loop)]))
-#     loop.close()
-#     if loop.close():
-#         sys.exit(0)
-loop = asyncio.get_event_loop()
-loop.run_until_complete(printa())
-loop.close()
+# async def printa():
+#     vl = await test()
+#     for i in vl:
+#         print(i)
+#
+# loop = asyncio.get_event_loop()
+# loop.run_until_complete(printa())
+# loop.close()
 
 # for x in test():
 #     pass

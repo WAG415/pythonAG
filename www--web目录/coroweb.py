@@ -1,4 +1,4 @@
-#!/user/bin/env python3
+#!/usr/bin/env python3
 
 __author__ = 'Aiguo Wang'
 
@@ -141,7 +141,7 @@ class RequestHandler(object):
 
 #注册一个URL处理函数:
 def add_static(app):
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static--存放静态文件')
     app.router.add_static('/static/',path)
     logging.info('add static %s => %s' % ('/static/', path))
 

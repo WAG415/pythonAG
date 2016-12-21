@@ -178,6 +178,47 @@ class Model(dict, metaclass=ModelMetaclass):
             return None
         return cls(**rs[0])
 
+    @classmethod
+    async def findAll(cls, where=None, args=None, **kw):
+        'find objects by where clause.'
+        sql = [cls.__select__]
+        if where:
+            sql.append('where')
+            sql.append(where)
+        if args is None:
+            args = []
+        orderBy = kw.get('orderBy', None)
+        if orderBy:
+            sql.append('order by')
+            sql.append(orderBy)
+        limit = kw.get('limit',None)
+        if limit is not None:
+            sql.append('limit')
+            if isinstance(limit,int):
+                sql.append('?')
+                args.append(limit)
+            elif isinstance(limit,tuple) and len(limit) == 2:
+                sql.append('?,?')
+                args.extend(limit)
+            else:
+                raise ValueError('Invalid limit value:%s' % str(limit))
+        rs = await select(' '.join(sql),args)
+        return [cls(**r) for r in rs]
+
+    @classmethod
+    @asyncio.coroutine
+    def finNumber(cls,selectField, where=None, args=None):
+        'find number by select and where'
+        sql = ['select % s _num_ from `%s`' % (selectField, cls.__table__)]
+        if where:
+            sql.append('where')
+            sql.append(where)
+        rs = select(''.join(sql),args,1)
+        if len(rs) == 0:
+            return None
+        return rs[0]['_num_']
+
+
     @asyncio.coroutine
     def save(self):
         args = list(map(self.getValueOrDefault,self.__fields__))
@@ -187,7 +228,7 @@ class Model(dict, metaclass=ModelMetaclass):
         if rows != 1:
             logging.warn('failed to insert record: affected rows: %s' % rows)
 
-
+    @asyncio.coroutine
     async def update(self):
         args = list(map(self.getValue, self.__fields__))
         args.append(self.getValue(self.__primary_key__))
@@ -195,6 +236,7 @@ class Model(dict, metaclass=ModelMetaclass):
         if rows != 1:
             logging.warn('failed to update by primary key: affected rows: %s' % rows)
 
+    @asyncio.coroutine
     async def remove(self):
         args = [self.getValue(self.__primary_key__)]
         rows = await execute(self.__delete__, args)
