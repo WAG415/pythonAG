@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     {% block meta %}<!-- block meta -->{% endblock %}
     <title>{% block title %} ? {% endblock %} - Awesome Python Webapp</title>
-    <link rel="stylesheet" href="/www--web目录/static/css/uikit.min.css">
-    <link rel="stylesheet" href="/www--web目录/static/css/uikit.gradient.min.css">
-    <link rel="stylesheet" href="/www--web目录/static/css/awesome.css"/>
-    <script src="/www--web目录/static/js/jquery.min.js"></script>
-    <script src="/www--web目录/static/js/uikit.min.js"></script>
-    <script src="/www--web目录/static/js/awesome.js"></script>
+    <link rel="stylesheet" href="/static/css/uikit.min.css">
+    <link rel="stylesheet" href="/static/css/uikit.gradient.min.css">
+    <link rel="stylesheet" href="/static/css/awesome.css"/>
+    <script src="/static/js/jquery.min.js"></script>
+    <script src="/static/js/uikit.min.js"></script>
+    <script src="/static/js/awesome.js"></script>
+    <script src="/static/js/sha1.min.js"></script>
+    <script src="/static/js/sticky.min.js"></script>
+    <script src="/static/js/vue.min.js"></script>
     {% block beforehead %}<!-- before head -->{% endblock %}
 </head>
 <body>
@@ -41,6 +44,14 @@
             </div>
         </div>
     </nav>
+    <div class="uk-container uk-container-center">
+        <div class="uk-grid">
+            <!--<content>-->
+                {% block content %}
+                {% endblock %}
+            <!--</content>-->
+        </div>
+    </div>
     <div class="uk-margin-large-top" style="background-color: #eee; border-top: 1px solid #ccc;">
         <div class="uk-container uk-container-center uk-text-center">
             <div class="uk-panel uk-margin-top uk-margin-bottom">
@@ -58,3 +69,8 @@
     </div>
 </body>
 </html>
+
+
+
+
+
