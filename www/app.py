@@ -9,8 +9,12 @@ from  datetime import datetime
 from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
 
+from config import configs
+
 import orm
 from coroweb import add_routes, add_static
+
+from handlers import cookie2user,COOKIE_NAME
 
 def init_jinja2(app, **kw):
     logging.info('init jinja2...')
@@ -41,6 +45,24 @@ def logger_factory(app,handler):
         #await asynico.sleep(0.3)
         return (yield from handler(request))
     return logger
+
+@asyncio.coroutine
+def auth_factory(app, handler):
+    @asyncio.coroutine
+    def auth(request):
+        logging.info('check user: %s %s' % (request.method, request.path))
+        request.__user__ = None
+        cookie_str = request.cookies.get(COOKIE_NAME)
+        if cookie_str:
+            user = yield from cookie2user(cookie_str)
+            if user:
+                logging.info('set current user: %s' % user.email)
+                request.__user__ = user
+        if request.path.startswith('/manage/') and (request.__user__ is None or not request.__user__.admin):
+            return web.HTTPFound('/signin')
+        return (yield from handler(request))
+    return auth
+
 
 @asyncio.coroutine
 def data_factory(app,handler):
@@ -104,6 +126,8 @@ def datatime_filter(t):
         return u'%s分钟前' % (delta // 60)
     if delta < 86400:
         return u'%s天前' % (delta // 86400)
+    if delta < 604800:
+        return u'%s天前' % (delta // 86400)
     dt = datetime.fromtimestamp(t)
     return u'%s年%s月%s日' % (dt.year, dt.month, dt.day)
 
@@ -119,15 +143,16 @@ def datatime_filter(t):
 #     logging.info('server started at http://127.0.0.1:9000...')
 #     return srv
 
-async def init(loop):
-    await orm.create_pool(loop=loop,host='127.0.0.1', port=3306, user='www',password='www',database='awesome')
+@asyncio.coroutine
+def init(loop):
+    yield from orm.create_pool(loop=loop,host='127.0.0.1', port=3306, user='www',password='www',database='awesome')
     app = web.Application(loop=loop, middlewares=[
-        logger_factory,response_factory
+        logger_factory,auth_factory,response_factory
     ])
     init_jinja2(app,filters=dict(datetime=datatime_filter))
     add_routes(app,'handlers')
     add_static(app)
-    srv = await loop.create_server(app.make_handler(),'127.0.0.1',9000)
+    srv = yield from loop.create_server(app.make_handler(),'127.0.0.1',9000)
     logging.info('server started at http://127.0.0.1:9000...')
     return srv
 

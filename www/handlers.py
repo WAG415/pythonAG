@@ -41,7 +41,8 @@ def index(request):
     ]
     return {
         '__template__':'blogs.html',
-        'blogs':blogs
+        'blogs':blogs,
+        '__user__' : request.__user__
     }
 
 #############################################
@@ -86,7 +87,7 @@ def cookie2user(cookie_str):
     if not cookie_str:
         return None
     try:
-        L = cookie_str.sqlit('-')
+        L = cookie_str.split('-')
         if len(L) !=3:
             return None
         uid, expires, sha1 = L
@@ -95,7 +96,7 @@ def cookie2user(cookie_str):
         user = yield from User.find(uid)
         if user is None:
             return None
-        s = '%s-%s-%s-%s' % (uid, user.passwd, expires, expires,_COOKIE_KEY)
+        s = '%s-%s-%s-%s' % (uid, user.passwd, expires,_COOKIE_KEY)
         if sha1 != hashlib.sha1(s.encode('utf-8')).hexdigest():
             logging.info('invalid sha1')
             return None
@@ -104,6 +105,11 @@ def cookie2user(cookie_str):
     except Exception as e:
         logging.exception(e)
         return None
+
+
+
+
+
 @get('/register')
 def register():
     return {
