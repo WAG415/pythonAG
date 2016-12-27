@@ -5,8 +5,8 @@ configs = {
     'db':{
         'host':'43.240.138.12',
         'port': 3306,
-        'user': 'www-data',
-        'password':'www-data',
+        'user': 'www',
+        'password':'www',
         'database':'awesome'
     },
     'session':{

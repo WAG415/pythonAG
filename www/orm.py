@@ -55,7 +55,7 @@ def execute(sql, args, autocommit=True):
             yield from conn.begin()
         try:
             cur = yield from conn.cursor()
-            yield from cur.execute(sql.replace('?','%s'),args)
+            yield from cur.execute(sql.replace('?', '%s'), args)
             affected = cur.rowcount
             yield from cur.close()
             if not autocommit:
@@ -68,11 +68,6 @@ def execute(sql, args, autocommit=True):
 
 '''ORM'''
 #设计orm需要从上层调用者角度来设计
-def creat_args_string(num):
-    L = []
-    for n in range(num):
-        L.append('?')
-    return ', '.join(L)
 class Field(object):
     def __init__(self, name, column_type, primary_key, default):
         self.name = name
@@ -92,7 +87,7 @@ class BooleanField(Field):
 
 class IntegerField(Field):
     def __init__(self,name=None,primary_key=False,default=0):
-        super().__init__(name,'biqint',primary_key,default)
+        super().__init__(name,'bigint',primary_key,default)
 
 class FloatField(Field):
     def __init__(self, name=None, primary_key=False, default=0.0):
@@ -146,7 +141,7 @@ class ModelMetaclass(type):
         attrs['__insert__'] = 'insert into `%s` (%s, `%s`) values (%s)' % (tableName, ', '.join(escaped_fields), primaryKey, create_args_string(len(escaped_fields) + 1))
         attrs['__update__'] = 'update `%s` set %s where `%s`=?' % (tableName, ', '.join(map(lambda f: '`%s`=?' % (mappings.get(f).name or f), fields)), primaryKey)
         attrs['__delete__'] = 'delete from `%s` where `%s`=?' % (tableName, primaryKey)
-        return type.__new__(cls,name,bases,attrs)
+        return type.__new__(cls, name, bases, attrs)
 
 
 
@@ -156,6 +151,7 @@ class ModelMetaclass(type):
 class Model(dict, metaclass=ModelMetaclass):
     def __init__(self, **kw):
         super(Model,self).__init__(**kw)
+
     def __getattr__(self, key):
         try:
             return self[key]
@@ -173,7 +169,8 @@ class Model(dict, metaclass=ModelMetaclass):
                 value = field.default() if callable(field.default) else field.default
                 logging.debug('using default value for %s: %s' % (key,str(value)))
                 setattr(self,key,value)
-            return value
+
+        return value
 
     @classmethod
     @asyncio.coroutine
@@ -185,7 +182,8 @@ class Model(dict, metaclass=ModelMetaclass):
         return cls(**rs[0])
 
     @classmethod
-    async def findAll(cls, where=None, args=None, **kw):
+    @asyncio.coroutine
+    def findAll(cls, where=None, args=None, **kw):
         'find objects by where clause.'
         sql = [cls.__select__]
         if where:
@@ -204,11 +202,11 @@ class Model(dict, metaclass=ModelMetaclass):
                 sql.append('?')
                 args.append(limit)
             elif isinstance(limit,tuple) and len(limit) == 2:
-                sql.append('?,?')
+                sql.append('?, ?')
                 args.extend(limit)
             else:
-                raise ValueError('Invalid limit value:%s' % str(limit))
-        rs = await select(' '.join(sql),args)
+                raise ValueError('Invalid limit value: %s' % str(limit))
+        rs = yield from select(' '.join(sql), args)
         return [cls(**r) for r in rs]
 
     @classmethod
@@ -229,23 +227,22 @@ class Model(dict, metaclass=ModelMetaclass):
     def save(self):
         args = list(map(self.getValueOrDefault,self.__fields__))
         args.append(self.getValueOrDefault(self.__primary_key__))
-        print(self.__insert__, args)
-        rows = yield from execute(self.__insert__,args)
+        rows = yield from execute(self.__insert__, args)
         if rows != 1:
             logging.warn('failed to insert record: affected rows: %s' % rows)
 
     @asyncio.coroutine
-    async def update(self):
+    def update(self):
         args = list(map(self.getValue, self.__fields__))
         args.append(self.getValue(self.__primary_key__))
-        rows = await execute(self.__update__, args)
+        rows = yield from execute(self.__update__, args)
         if rows != 1:
             logging.warn('failed to update by primary key: affected rows: %s' % rows)
 
     @asyncio.coroutine
-    async def remove(self):
+    def remove(self):
         args = [self.getValue(self.__primary_key__)]
-        rows = await execute(self.__delete__, args)
+        rows = yield from execute(self.__delete__, args)
         if rows != 1:
             logging.warn('failed to remove by primary key: affected rows: %s' % rows)
 
