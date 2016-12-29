@@ -12,7 +12,7 @@ from coroweb import get,post
 
 from models import User,Comment,Blog,next_id
 
-from apis import APIValueError, APIResourceNotFoundError, APIError, APIPermissionError
+from apis import APIValueError, APIResourceNotFoundError, APIError, APIPermissionError,Page
 
 from config import configs
 from aiohttp import web
@@ -199,6 +199,13 @@ def manage_create_blog():
 
     }
 
+@get('/manage/blogs')
+def manage_blogs(*, page='1'):
+    return {
+        '__template__':'manage_blogs.html',
+        'page_index':get_page_index(page)
+    }
+
 #用户注册和登录
 _RE_EMAIL = re.compile(r'^[a-z0-9\.\-\_]+\@[a-z0-9\-\_]+(\.[a-z0-9\-\_]+){1,4}$')
 _RE_SHA1 = re.compile(r'^[0-9a-f]{40}$')
@@ -244,6 +251,17 @@ def api_create_blog(request, *,name,summary, content):
     blog = Blog(user_id=request.__user__.id, user_name=request.__user__.name,user_image=request.__user__.image, name=name.strip(), summary=summary.strip(),content=content.strip())
     yield from blog.save()
     return blog
+
+@get('/api/blogs')
+def api_blogs(*,page='1'):
+    page_index = get_page_index(page)
+    num = yield from Blog.findNumber('count(id)')
+    p = Page(num,page_index)
+    if num == 0:
+        return dict(page=p, blogs=())
+    blogs = yield from Blog.findAll(orderBy='created_at desc', limit=(p.limit))
+    print('*******'*10,blogs)
+    return dict(page=p, blogs=blogs)
 
 
 
